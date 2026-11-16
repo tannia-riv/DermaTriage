@@ -1,43 +1,64 @@
-from xml.parsers.expat import model
-
 import gradio as gr
+import spaces
 import torch
 from torchvision import transforms
 from PIL import Image
 import torchvision.models as models
 
-model = models.efficientnet_b0(weights='DEFAULT')
-model.eval()
+# --- CARGA DEL MODELO (Comentada por ahora) ---
+# Cuando tu compañero te pase el modelo real, descomenta estas líneas:
+# model = models.efficientnet_b0(weights='DEFAULT')
+# model.eval()
 
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
 ])
 
+# --- FUNCIÓN DE INFERENCIA (MOCK) ---
+# El decorador @spaces.GPU es obligatorio para que arranque en ZeroGPU
+@spaces.GPU
 def triage(image):
     if image is None:
-        return "Sube una imagen por favor."
+        return "Por favor, sube una imagen para analizar."
     
-    # Preprocesamiento
-    img_t = transform(image).unsqueeze(0)
+    # --- Lógica simulada ---
+    # Aquí es donde irá el código real para procesar la imagen:
+    # img_t = transform(image).unsqueeze(0)
+    # with torch.no_grad():
+    #     output = model(img_t)
+    #     prob = torch.softmax(output, dim=1)
     
-    # Inferencia (simulada por ahora para que no falle)
-    with torch.no_grad():
-        # En un modelo real aquí iría: output = model(img_t)
-        # Por ahora devolvemos un texto fijo para probar la UI
-        pass
-    
-    # Lógica de triaje placeholder (vuestra compañera/o la cambiará)
-    return "⚠️ RESULTADO DE PRUEBA: La lesión parece sospechosa. (Esto es un mock hasta que integremos el modelo real)."
+    # Simulamos un resultado para que veas cómo queda el diseño
+    return "⚠️ RESULTADO DE PRUEBA:\n\nLa lesión presenta características que sugieren una revisión prioritaria por un dermatólogo.\n\n*(Este es un mensaje simulado para probar el diseño)*"
 
-# --- INTERFAZ GRADIO ---
-demo = gr.Interface(
-    fn=triage,
-    inputs=gr.Image(type="pil", label="Sube foto de la lesión"),
-    outputs=gr.Text(label="Resultado del Triaje"),
-    title="Triaje de Cáncer de Piel (Demo)",
-    description="App en desarrollo para el Máster de IA. No es un diagnóstico médico."
-)
+# --- INTERFAZ GRÁFICA ---
+# Puedes cambiar el tema aquí: gr.themes.Soft(), gr.themes.Monochrome(), etc.
+with gr.Blocks(theme=gr.themes.Soft()) as demo:
+    gr.Markdown("# 🩺 DermaTriage")
+    gr.Markdown("Sube una foto de una lesión cutánea para obtener una evaluación preliminar de triaje.")
+    
+    with gr.Row():
+        # Columna izquierda: Entrada de imagen y botón
+        with gr.Column(scale=1):
+            input_img = gr.Image(type="pil", label="Foto de la lesión")
+            btn = gr.Button("Analizar Imagen", variant="primary")
+            
+        # Columna derecha: Salida de texto
+        with gr.Column(scale=1):
+            output_text = gr.Textbox(
+                label="Resultado del Triaje", 
+                lines=6, 
+                interactive=False
+            )
+    
+    # Conectamos el botón a la función triage
+    btn.click(fn=triage, inputs=input_img, outputs=output_text)
+    
+    # Aviso legal
+    gr.Markdown("---")
+    gr.Markdown("⚠️ **Aviso legal:** Esta es una demo educativa para el Máster en IA Avanzada. No es un dispositivo médico ni sustituye el diagnóstico de un dermatólogo.")
 
+# Lanzar la app
 if __name__ == "__main__":
     demo.launch()
