@@ -1,11 +1,12 @@
+from xml.parsers.expat import model
+
 import gradio as gr
 import torch
 from torchvision import transforms
 from PIL import Image
+import torchvision.models as models
 
-# --- MODELO DE PRUEBA (Luego lo cambiáis por el vuestro) ---
-# Simulamos una carga de modelo. Cuando tengáis vuestro .pth, lo cambiáis.
-model = torch.hub.load('pytorch/vision:v0.10.0', 'efficientnet_b0', pretrained=True)
+model = models.efficientnet_b0(weights='DEFAULT')
 model.eval()
 
 transform = transforms.Compose([
